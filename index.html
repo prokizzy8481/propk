@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PROKIZZY PORTAL HUB</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="serviceWorker" href="sw.js">
+    <style>
+        :root {
+            --primary: #8d73ee;
+            --primary-hover: #765cd6;
+            --bg-body: #121212;
+            --bg-card: #1e1e1e;
+            --text-main: #e0e0e0;
+            --text-muted: #aaa;
+            --border: #333333;
+            --radius-lg: 16px;
+            --radius-md: 10px;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            align-items: center;
+            
+        }
+
+        /* --- HEADER --- */
+        header {
+            width: 100%;
+            background-color: yellowgreen;
+            border-bottom: 1px solid var(--border);
+            padding: 3rem 2rem;
+            text-align: center;
+            font-size: larger;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            letter-spacing: 2px;
+            color: #fff;
+            font-weight: 700;
+        }
+
+        /* --- PORTAL CORE GRID LAYOUT --- */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            max-width: 1000px;
+            width: 100%;
+            padding: 40px 20px;
+            box-sizing: border-box;
+        }
+
+        .hub-intro {
+            text-align: center;
+            margin-bottom: 40px;
+            max-width: 600px;
+        }
+
+        .hub-intro h2 {
+            font-size: 2.2rem;
+            color: #fff;
+            margin-bottom: 12px;
+        }
+
+        .hub-intro p {
+            color: var(--text-muted);
+            font-size: 1.05rem;
+            line-height: 1.6;
+        }
+
+        .grid-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            width: 100%;
+            margin-bottom: 30px;
+        }
+
+        /* --- INTERACTIVE CARDS --- */
+        .portal-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: flex-start;
+            text-align: left;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .portal-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: 0 15px 35px rgba(141, 115, 238, 0.15);
+        }
+
+        .card-icon {
+            font-size: 2rem;
+            margin-bottom: 15px;
+        }
+
+        .portal-card h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.35rem;
+            color: #fff;
+        }
+
+        .portal-card p {
+            color: var(--text-muted);
+            font-size: 0.92rem;
+            line-height: 1.5;
+            margin: 0 0 25px 0;
+            flex-grow: 1;
+        }
+
+        .enter-btn {
+            display: inline-block;
+            background-color: var(--primary);
+            color: #fff;
+            text-decoration: none;
+            padding: 10px 20px;
+            font-weight: 600;
+            border-radius: var(--radius-md);
+            font-size: 0.9rem;
+            transition: background 0.2s;
+            width: 100%;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        .portal-card:hover .enter-btn {
+            background-color: var(--primary-hover);
+        }
+
+        
+        #installAppBtn {
+            display: none;
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: greenyellow;
+            padding: 10px 24px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.2s;
+        }
+
+        #installAppBtn:hover {
+            background: blueviolet;
+            color: #fff;
+        }
+
+        /* --- FOOTER --- */
+        footer {
+            width: 100%;
+            text-align: center;
+            padding: 25px 0;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            border-top: 1px solid var(--border);
+            background-color: var(--bg-card);
+            margin-top: auto;
+        }
+
+        .secret-gate {
+            cursor: default;
+            user-select: none;
+        }
+
+        /* --- SECURITY OVERLAY CONSOLE --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .terminal-box {
+            background: #0d0d11;
+            border: 2px solid #2d2d3d;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+            padding: 30px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6), 0 0 30px rgba(141, 115, 238, 0.15);
+            text-align: center;
+            transform: scale(0.9);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .modal-overlay.active .terminal-box {
+            transform: scale(1);
+        }
+
+        .terminal-badge {
+            background: rgba(141, 115, 238, 0.1);
+            color: var(--primary);
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            display: inline-block;
+            margin-bottom: 15px;
+            border: 1px solid rgba(141, 115, 238, 0.2);
+        }
+
+        .terminal-box h3 {
+            margin: 0 0 8px 0;
+            color: white;
+            font-size: 1.4rem;
+        }
+
+        .terminal-box p {
+            color: #7a7a93;
+            font-size: 0.85rem;
+            margin: 0 0 24px 0;
+        }
+
+        .terminal-input {
+            width: 100%;
+            box-sizing: border-box;
+            background: #14141a;
+            border: 1px solid #323247;
+            border-radius: 8px;
+            padding: 14px;
+            color: white;
+            font-size: 1.2rem;
+            text-align: center;
+            letter-spacing: 0.3em;
+            outline: none;
+            margin-bottom: 20px;
+        }
+
+        .terminal-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 12px rgba(141, 115, 238, 0.2);
+        }
+
+        .terminal-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .t-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            border: none;
+        }
+
+        .t-btn-cancel { background: #1c1c24; color: #a0a0ba; }
+        .t-btn-verify { background: var(--primary); color: white; }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-6px); }
+            40%, 80% { transform: translateX(6px); }
+        }
+
+        .terminal-box.error-shake { animation: shake 0.4s ease-in-out; border-color: #ff4757; }
+        .terminal-box.success-pulse { border-color: #2ecc71; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>PROKIZZY NETWORK</h1>
+        <button id="installAppBtn">📥 Install App</button>
+    </header>
+
+    <main>
+        <div class="hub-intro">
+            <h2>Welcome to Your Workspace Net</h2>
+            <p>Select an isolated sub-application sector below to manage system metrics, run AI models, parse literature arrays, or view creator profiles.</p>
+        </div>
+
+        <div class="grid-links">
+            <div class="portal-card">
+                <div class="card-icon">📊</div>
+                <h3>Enterprise Dashboard</h3>
+                <p>Monitor localized storage clusters, sync data metrics, and inspect system-wide network configuration summaries cleanly.</p>
+                <a href="dashboard.html" class="enter-btn">Open Dashboard</a>
+            </div>
+
+            <div class="portal-card">
+                <div class="card-icon">🤖</div>
+                <h3>CHAT PK PRO</h3>
+                <p>Run your automated conversational processing assistant module built with native persistent search logging matrices.</p>
+                <a href="chatpk.html" class="enter-btn">Launch AI Assistant</a>
+            </div>
+
+            <div class="portal-card">
+                <div class="card-icon">📚</div>
+                <h3>Digital Library</h3>
+                <p>Browse through your collection of indexed educational reference materials and look over document texts directly inside your web framework.</p>
+                <a href="index2.html" class="enter-btn">Explore Documents</a>
+            </div>
+
+            <div class="portal-card">
+                <div class="card-icon">✨</div>
+                <h3>Creator Portfolio</h3>
+                <p>Review standard creator profiles, video production roles, e-commerce experiments, and ongoing media platform roadmaps.</p>
+                <a href="about.html" class="enter-btn">View Profile Portfolio</a>
+            </div>
+        </div>
+
+    </main>
+
+    <footer>
+        <p class="secret-gate" id="copyrightGate">&copy; 2026 CHAT PK NETWORK. All rights reserved.</p>
+    </footer>
+
+    <div class="modal-overlay" id="terminalOverlay">
+        <div class="terminal-box" id="terminalBox">
+            <div class="terminal-badge">Security Node</div>
+            <h3>System Authorization</h3>
+            <p>Input operational validation code matrix</p>
+            <input type="password" id="secureField" class="terminal-input" placeholder="••••" maxlength="4" autocomplete="off">
+            <div class="terminal-actions">
+                <button class="t-btn t-btn-cancel" id="closeGateBtn">Abort</button>
+                <button class="t-btn t-btn-verify" id="verifyGateBtn">Execute</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let deferredPrompt = null;
+        const installBtn = document.getElementById('installAppBtn');
+        const copyrightGate = document.getElementById('copyrightGate');
+        
+        const terminalOverlay = document.getElementById('terminalOverlay');
+        const terminalBox = document.getElementById('terminalBox');
+        const secureField = document.getElementById('secureField');
+        const closeGateBtn = document.getElementById('closeGateBtn');
+        const verifyGateBtn = document.getElementById('verifyGateBtn');
+
+        const ACCESS_KEY = "1234";
+
+        copyrightGate.addEventListener('dblclick', () => {
+            secureField.value = '';
+            terminalBox.className = 'terminal-box';
+            terminalOverlay.classList.add('active');
+            setTimeout(() => secureField.focus(), 150);
+        });
+
+        function handleValidationPipeline() {
+            if (secureField.value === ACCESS_KEY) {
+                terminalBox.classList.add('success-pulse');
+                secureField.style.color = '#2ecc71';
+                setTimeout(() => {
+                    terminalOverlay.classList.remove('active');
+                    window.location.href = "admin.html";
+                }, 700);
+            } else {
+                terminalBox.classList.add('error-shake');
+                secureField.value = '';
+                secureField.focus();
+                setTimeout(() => terminalBox.classList.remove('error-shake'), 400);
+            }
+        }
+
+        verifyGateBtn.addEventListener('click', handleValidationPipeline);
+        secureField.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleValidationPipeline(); });
+        closeGateBtn.addEventListener('click', () => terminalOverlay.classList.remove('active'));
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installBtn.style.display = 'inline-block';
+        });
+
+        installBtn.addEventListener('click', () => {
+            if (!deferredPrompt) return;
+            installBtn.style.display = 'none';
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
+        });
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').catch(err => console.error(err));
+            });
+        }
+    </script>
+</body>
+</html>

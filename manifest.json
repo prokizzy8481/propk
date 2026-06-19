@@ -1,0 +1,21 @@
+{
+  "name": "CHAT PK PRO Workspace",
+  "short_name": "ChatPKPro",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#8d73ee",
+  "theme_color": "#8d73ee",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

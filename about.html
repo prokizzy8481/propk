@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prokizzy Tito | Digital Creator Portfolio</title>
+    <style>
+        :root { 
+            --primary: #8d73ee; 
+            --bg-body: #f0f2f5; 
+            --bg-card: #ffffff;
+            --text-main: #333333; 
+            --chat-bg: #f9f9f9; 
+            --bot-msg: #eeeeee;
+            --border: #eeeeee; 
+            --error: #ff4757; 
+            --success: #2ecc71;
+            --shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+        
+        body.dark-mode {
+            --bg-body: #121212; 
+            --bg-card: #1e1e1e; 
+            --text-main: #e0e0e0;
+            --chat-bg: #181818; 
+            --bot-msg: #2d2d2d; 
+            --border: #333333;
+            --shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            transition: background 0.3s, color 0.3s, border-color 0.3s;
+        }
+
+        body { 
+            font-family: 'Segoe UI', sans-serif; 
+            background: var(--bg-body); 
+            color: var(--text-main); 
+            line-height: 1.6;
+            padding: 0;
+        }
+
+        /* --- THEME TOGGLE --- */
+        .theme-toggle {
+            position: fixed;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.8rem;
+            color: var(--text-main);
+            z-index: 1000;
+            box-shadow: var(--shadow);
+            outline: none;
+        }
+
+        /* --- HEADER BANNER --- */
+        header {
+            background: var(--primary);
+            color: white;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(141, 115, 238, 0.15);
+        }
+
+        .header-content h1 {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.03em;
+        }
+
+        .subtitle {
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 1.15rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* --- MAIN LAYOUT --- */
+        main {
+            max-width: 800px;
+            margin: 2.5rem auto;
+            padding: 0 1.5rem;
+        }
+
+        .section {
+            background: var(--bg-card);
+            padding: 30px;
+            border-radius: 24px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+        }
+
+        h2 {
+            color: var(--text-main);
+            font-size: 1.4rem;
+            margin-bottom: 1.25rem;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 10px;
+        }
+
+        p {
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+        }
+
+        strong {
+            color: var(--text-main);
+        }
+
+        /* --- FILTER CONTROLS --- */
+        .filter-container {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        .home-button{
+            position: fixed;
+            top: 1.5rem;
+            left: 1.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.8rem;
+            color: var(--text-main);
+            z-index: 1000;
+            box-shadow: var(--shadow);
+            outline: none;
+        }
+
+        .filter-btn {
+            background: var(--chat-bg);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 8px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.85rem;
+        }
+
+        .filter-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* --- SKILLS/PROJECTS GRID --- */
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        @media (min-width: 600px) {
+            .grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .card {
+            background: var(--chat-bg);
+            padding: 20px;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--primary);
+        }
+
+        .card h3 {
+            color: var(--text-main);
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+        }
+
+        .card p {
+            margin: 0;
+            font-size: 0.88rem;
+        }
+
+        /* --- INTERACTIVE FORM --- */
+        .contact-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 25px;
+            text-align: left;
+        }
+
+        .input-box {
+            text-align: left;
+        }
+
+        .input-box label {
+            font-size: 0.7rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .input-box input, 
+        .input-box textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            box-sizing: border-box;
+            background: var(--bg-card);
+            color: var(--text-main);
+            outline: none;
+            font-family: inherit;
+            font-size: 0.95rem;
+        }
+
+        .input-box input:focus,
+        .input-box textarea:focus {
+            border-color: var(--primary);
+        }
+
+        /* --- INTERACTIVE BUTTONS --- */
+        .auth-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            font-size: 0.95rem;
+            box-shadow: 0 4px 12px rgba(141, 115, 238, 0.2);
+        }
+        .auth-btn:hover {
+            opacity: 0.9;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: black;
+            font-size: 0.85rem;
+            border-top: 1px solid var(--border);
+            background: var(--bg-card);
+        }
+    </style>
+</head>
+<body>
+
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">🌙 Dark Mode</button>
+
+    <header>
+        <div class="header-content">
+            <h1>Prokizzy Tito</h1>
+            <p class="subtitle">Emerging Rwandan Digital Creator, Video Producer & Multimedia Designer</p>
+            <button class="home-button"><a href="index.html">Back to Home</a></button>
+        </div>
+    </header>
+
+    <main>
+        <section class="section">
+            <h2>About Me</h2>
+            <p>I am an up-and-coming creator from Rwanda currently building my skills across multiple creative and technical domains. Known for a proactive venture into digital content at a young age, I focus on multimedia production and digital tech frameworks.</p>
+        </section>
+
+        <section class="section">
+            <h2>🎓 Academic Background</h2>
+            <p><strong>School:</strong> Hope Haven Christian Secondary School, Rwanda.</p>
+            <p><strong>Environment:</strong> Hope Haven Rwanda provides structured secondary education, modern computer labs, and a boarding ecosystem designed to support and nurture talented youth across Rwanda's districts.</p>
+        </section>
+
+        <section class="section">
+            <h2>✨ Creative & Multimedia Showcase</h2>
+            <p>Heavily involved in the growing digital economy in Rwanda, managing multiple responsibilities as a technical visual creator. I specialize in designing structured promotional assets, custom brand layouts, and producing engaging digital media assets.</p>
+        </section>
+
+        <section class="section">
+            <h2>🛠️ Skills & Projects</h2>
+            <div class="filter-container">
+                <button class="filter-btn active" onclick="filterSelection('all', this)">All</button>
+            </div>
+
+            <div class="grid">
+                <div class="card filter-item video">
+                    <h3>Production Roles</h3>
+                    <p>Hands-on experience working as a game maker, video producer, director, and video editor.</p>
+                </div>
+                <div class="card filter-item video">
+                    <h3>YouTube Hub</h3>
+                    <p>Shares and documents multimedia work through the official Prokizzy Tito YouTube Channel.</p>
+                </div>
+                <div class="card filter-item design">
+                    <h3>Graphic Design</h3>
+                    <p>Creating promotional assets, brand layouts, and digital media graphics for events.</p>
+                </div>
+                <div class="card filter-item web">
+                    <h3>E-Commerce</h3>
+                    <p>Building online digital storefronts and exploring modern dropshipping frameworks.</p>
+                </div>
+                <div class="card filter-item web">
+                    <h3>Digital Marketing</h3>
+                    <p>Learning strategy to position, build, and scale brand awareness across networks.</p>
+                </div>
+            </div>
+        </section>
+        <footer>&copy; Prokizzy Tito portfolio. All rights reserved.</footer>
+
+

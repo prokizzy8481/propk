@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>CHAT PK PRO — Enterprise Administrative Grid</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#6c5ce7">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-body: #09090e;
+            --bg-sidebar: #111118;
+            --bg-card: #161622;
+            --bg-input: #1d1d2c;
+            --border: #242438;
+            --primary: #6c5ce7;
+            --primary-glow: rgba(108, 92, 231, 0.15);
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            
+            --success: #10b981;
+            --success-glow: rgba(16, 185, 129, 0.1);
+            --warning: #f59e0b;
+            --warning-glow: rgba(245, 158, 11, 0.1);
+            --error: #ef4444;
+            --error-glow: rgba(239, 68, 68, 0.1);
+            
+            --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 12px 30px rgba(0, 0, 0, 0.25);
+            --radius-lg: 16px;
+            --radius-md: 12px;
+            --radius-sm: 8px;
+            --sidebar-width: 260px;
+        }
+
+        .light-mode {
+            --bg-body: #f8f9fa;
+            --bg-sidebar: #ffffff;
+            --bg-card: #ffffff;
+            --bg-input: #f1f3f5;
+            --border: #e9ecef;
+            --text-main: #212529;
+            --text-muted: #6c757d;
+            --shadow-md: 0 12px 30px rgba(108, 92, 231, 0.04);
+            --primary-glow: rgba(108, 92, 231, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+        }
+
+        body {
+            background: var(--bg-body);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        /* --- AUTHENTICATION SHIELD SYSTEM --- */
+        #gatekeeper-lockout {
+            position: fixed;
+            inset: 0;
+            background: #09090e;
+            z-index: 99999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .auth-terminal {
+            background: #111118;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            width: 100%;
+            max-width: 400px;
+            padding: 32px;
+            box-shadow: var(--shadow-md);
+            text-align: center;
+        }
+
+        .terminal-header {
+            font-size: 0.8rem;
+            color: var(--error);
+            font-family: monospace;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            margin-bottom: 12px;
+        }
+
+        .auth-title {
+            font-size: 1.3rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            margin-bottom: 8px;
+        }
+
+        .auth-desc {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+            line-height: 1.4;
+        }
+
+        .error-shake {
+            animation: shake 0.4s ease-in-out;
+            border-color: var(--error) !important;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-8px); }
+            40%, 80% { transform: translateX(8px); }
+        }
+
+        /* --- SIDEBAR NAV MATRIX --- */
+        #sidebar {
+            width: var(--sidebar-width);
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 24px 16px;
+            z-index: 100;
+        }
+
+        .brand-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0 12px 32px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 24px;
+        }
+
+        .brand-logo {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #8d73ee, var(--primary));
+            border-radius: var(--radius-sm);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: 800;
+            font-size: 1.1rem;
+        }
+
+        .brand-name {
+            font-weight: 800;
+            font-size: 1.1rem;
+            letter-spacing: -0.02em;
+        }
+
+        .nav-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex: 1;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            color: var(--text-main);
+            background: var(--primary-glow);
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+            background: var(--primary-glow);
+            border-left: 3px solid var(--primary);
+            border-radius: 0 var(--radius-md) var(--radius-md) 0;
+        }
+
+        .sidebar-footer {
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        /* --- CONTAINER CONSOLE WORKSPACE --- */
+        #main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        header {
+            height: 75px;
+            background: var(--bg-sidebar);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 32px;
+        }
+
+        .header-title h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .control-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 10px 16px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .control-btn:hover {
+            border-color: var(--primary);
+        }
+
+        /* --- DASHBOARD CANVAS --- */
+        .workspace-canvas {
+            flex: 1;
+            overflow-y: auto;
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+        }
+
+        /* PLATFORM STATS GRID */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+        }
+
+        .kpi-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            box-shadow: var(--shadow-md);
+            position: relative;
+        }
+
+        .kpi-title {
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .kpi-value {
+            font-size: 1.75rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            margin-bottom: 6px;
+        }
+
+        .kpi-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 4px 8px;
+            border-radius: 20px;
+        }
+
+        .kpi-badge.up { background: var(--success-glow); color: var(--success); }
+        .kpi-badge.neutral { background: var(--primary-glow); color: var(--primary); }
+
+        /* SPLIT ANALYTICS PANELS */
+        .analytics-split {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+        }
+
+        @media(max-width: 1024px) {
+            .analytics-split { grid-template-columns: 1fr; }
+        }
+
+        .dashboard-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            box-shadow: var(--shadow-md);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .panel-title {
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+        }
+
+        /* LIVE RECONCILIATION SEARCH ENGINE */
+        .search-wrapper {
+            position: relative;
+            min-width: 240px;
+        }
+
+        .search-input {
+            width: 100%;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 8px 14px;
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .search-input:focus {
+            border-color: var(--primary);
+        }
+
+        /* SVG REAL-TIME CHART GRAPH PIPELINE */
+        .chart-container {
+            width: 100%;
+            height: 200px;
+            position: relative;
+        }
+
+        .chart-svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .chart-line {
+            fill: none;
+            stroke: var(--primary);
+            stroke-width: 3.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            transition: d 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .chart-gradient {
+            fill: url(#chart-glow);
+            transition: d 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .donut-segment {
+            transition: stroke-dasharray 0.5s ease, stroke-dashoffset 0.5s ease;
+        }
+
+        /* TRANSACTION LEDGER ARCHIVE DATA TABLES */
+        .table-wrapper {
+            overflow-x: auto;
+            width: 100%;
+        }
+
+        .enterprise-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        .enterprise-table th {
+            padding: 14px 16px;
+            color: var(--text-muted);
+            font-weight: 700;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .enterprise-table td {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-main);
+            font-weight: 500;
+        }
+
+        .enterprise-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .status-pill.active { background: var(--success-glow); color: var(--success); }
+        .status-pill.staged { background: var(--warning-glow); color: var(--warning); }
+    </style>
+</head>
+<body>
+
+    <div id="gatekeeper-lockout">
+        <div class="auth-terminal" id="terminal-box">
+            <div class="terminal-header">⚠️ SECURE SYSTEM GRID</div>
+            <h2 class="auth-title">Administrative Validation</h2>
+            <p class="auth-desc">This node is isolated for verified infrastructure administrators. Enter network security authorization passcode.</p>
+            <div class="input-group" style="margin-bottom: 16px;">
+                <input type="password" id="gate-passcode" placeholder="Enter System Passcode..." style="text-align: center; letter-spacing: 0.3em; width: 100%; background: var(--bg-input); border: 1px solid var(--border); color: var(--text-main); padding: 12px 16px; border-radius: var(--radius-md); outline: none;">
+            </div>
+            <button class="action-submit" style="width: 100%; display: block; background: var(--primary); color: white; border: none; padding: 12px; border-radius: var(--radius-md); cursor: pointer; font-weight: 600;" onclick="validateAccessPipeline()">Authorize Connection</button>
+            <a href="index.html" class="control-btn" style="margin-top: 12px; width:100%; justify-content:center; box-sizing: border-box; text-decoration: none;">Abort and Return to Terminal</a>
+        </div>
+    </div>
+
+    <aside id="sidebar">
+        <div class="brand-container">
+            <div class="brand-logo">⚔️</div>
+            <div class="brand-name">CHAT PK NETWORK</div>
+        </div>
+        <nav class="nav-list">
+            <a href="#" class="nav-item active">📊 Ecosystem Metrics</a>
+            <a href="chatpk.html" class="nav-item">💬 Core Chat App</a>
+            <a href="books.html" class="nav-item">📚 Digital Library DB</a>
+            <a href="about.html" class="nav-item">👤 Creator Portfolio</a>
+        </nav>
+        <div class="sidebar-footer">
+            <button class="control-btn" style="width:100%; justify-content:center;" onclick="terminateAdminSession()">🔒 Terminate Clearance</button>
+            <button class="control-btn" style="width:100%; justify-content:center;" onclick="toggleVisualTheme()">🌗 Toggle UI Theme</button>
+        </div>
+    </aside>
+
+    <main id="main-content">
+        <header>
+            <div class="header-title">
+                <h1>Platform Administrative Control Infrastructure</h1>
+            </div>
+            <div class="header-controls">
+                <a href="index.html" class="control-btn" style="text-decoration: none;">🏠 Terminal Hub</a>
+                <a href="admin.html" class="control-btn" style="text-decoration: none;">Admin</a>
+            </div>
+        </header>
+
+        <div class="workspace-canvas">
+            
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-title">Indexed Database Books</div>
+                    <div class="kpi-value" id="kpi-books">0</div>
+                    <div class="kpi-badge neutral">Live IndexedDB Store</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-title">Active Thread Sessions</div>
+                    <div class="kpi-value" id="kpi-threads">0</div>
+                    <div class="kpi-badge up">▲ Live Cache Loop</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-title">DuckDuckGo Latency</div>
+                    <div class="kpi-value">42ms</div>
+                    <div class="kpi-badge up">✔ Optimal Async</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-title">Service Worker Engine</div>
+                    <div class="kpi-value">PWA-V2</div>
+                    <div class="kpi-badge up">● Online Active</div>
+                </div>
+            </div>
+
+            <div class="analytics-split">
+                <div class="dashboard-panel">
+                    <div class="panel-header">
+                        <div class="panel-title">Workspace Data Velocity Throughput (24h Buffer Loop)</div>
+                        <div style="font-size: 1.25rem; font-weight: 800; color: var(--primary);" id="live-throughput-text">145.5 MB/s</div>
+                    </div>
+                    <div class="chart-container">
+                        <svg class="chart-svg" viewBox="0 0 500 100" preserveAspectRatio="none">
+                            <defs>
+                                <linearGradient id="chart-glow" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stop-color="var(--primary)" stop-opacity="0.25"/>
+                                    <stop offset="100%" stop-color="var(--primary)" stop-opacity="0.00"/>
+                                </linearGradient>
+                            </defs>
+                            <path id="throughput-gradient" class="chart-gradient" d="M 0 95 L 50 80 L 100 88 L 150 45 L 200 60 L 250 25 L 300 40 L 350 20 L 400 55 L 450 15 L 500 50 L 500 100 L 0 100 Z"></path>
+                            <path id="throughput-line" class="chart-line" d="M 0 95 L 50 80 L 100 88 L 150 45 L 200 60 L 250 25 L 300 40 L 350 20 L 400 55 L 450 15 L 500 50"></path>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="dashboard-panel">
+                    <div class="panel-header">
+                        <div class="panel-title">Asynchronous Memory Map Allocation</div>
+                    </div>
+                    <div style="display:flex; justify-content:center; align-items:center; height:100%; min-height:150px;">
+                        <svg width="120" height="120" viewBox="0 0 32 32" style="transform: rotate(-90deg);">
+                            <circle r="16" cx="16" cy="16" fill="transparent" stroke="var(--border)" stroke-width="4" />
+                            <circle id="donut-segment-chat" class="donut-segment" r="16" cx="16" cy="16" fill="transparent" stroke="var(--primary)" stroke-width="4" stroke-dasharray="65 100" stroke-dashoffset="0" />
+                            <circle id="donut-segment-lib" class="donut-segment" r="16" cx="16" cy="16" fill="transparent" stroke="#10b981" stroke-width="4" stroke-dasharray="25 100" stroke-dashoffset="-65" />
+                            <circle id="donut-segment-static" class="donut-segment" r="16" cx="16" cy="16" fill="transparent" stroke="var(--text-muted)" stroke-width="4" stroke-dasharray="10 100" stroke-dashoffset="-90" />
+                        </svg>
+                        <div style="margin-left: 20px; font-size: 0.85rem; display:flex; flex-direction:column; gap:8px;">
+                            <div><span style="color:var(--primary)">■</span> Chat Caches (<span id="lbl-pct-chat">65%</span>)</div>
+                            <div><span style="color:#10b981">■</span> Library Blobs (<span id="lbl-pct-lib">25%</span>)</div>
+                            <div><span style="color:var(--text-muted)">■</span> Static Vectors (<span id="lbl-pct-static">10%</span>)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-panel">
+                <div class="panel-header">
+                    <div class="panel-title">Active Digital Library Data Store Cluster (Shared IndexedDB Node)</div>
+                    <div class="search-wrapper">
+                        <input type="text" id="ledger-search" class="search-input" placeholder="Filter nodes by ID or resource name..." onkeyup="executeLedgerReconciliationFilter()">
+                    </div>
+                </div>
+                <div class="table-wrapper">
+                    <table class="enterprise-table" id="cluster-table">
+                        <thead>
+                            <tr>
+                                <th>Volume Identifier</th>
+                                <th>Resource Classification Name / Subject Header</th>
+                                <th>Sub-Genre Context Label</th>
+                                <th>Database Node Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ledger-rows">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        let dbInstance = null;
+        let throughputInterval = null;
+        let memoryInterval = null;
+
+        // --- EXPLICIT HARD LOCK SYSTEM ---
+        // By changing session tracking into a volatile state that resets immediately on page creation, 
+        // a refresh, close, or returning backward/forward from any other webpage triggers the input shield.
+        function checkClearanceStatus() {
+            document.getElementById('gatekeeper-lockout').style.display = 'flex';
+            document.getElementById('gate-passcode').focus();
+        }
+
+        function validateAccessPipeline() {
+            const passcodeField = document.getElementById('gate-passcode');
+            const terminalBox = document.getElementById('terminal-box');
+
+            if (passcodeField.value === 'admin1') {
+                document.getElementById('gatekeeper-lockout').style.display = 'none';
+                initializeEcosystemMetrics();
+            } else {
+                terminalBox.classList.add('error-shake');
+                passcodeField.value = '';
+                passcodeField.focus();
+                setTimeout(() => terminalBox.classList.remove('error-shake'), 400);
+            }
+        }
+
+        function terminateAdminSession() {
+            if(throughputInterval) clearInterval(throughputInterval);
+            if(memoryInterval) clearInterval(memoryInterval);
+            window.location.reload();
+        }
+
+        document.getElementById('gate-passcode').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') validateAccessPipeline();
+        });
+
+
+        // --- OPERATIONS RUNTIME DATA STREAM ---
+        function initializeEcosystemMetrics() {
+            let totalThreads = 0;
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith("threads_")) {
+                    try {
+                        const threadsArray = JSON.parse(localStorage.getItem(key) || "[]");
+                        totalThreads += threadsArray.length;
+                    } catch(e) {}
+                }
+            }
+            document.getElementById('kpi-threads').textContent = totalThreads || "0";
+
+            try {
+                const req = indexedDB.open("ChatPkLibraryDB", 1);
+                req.onsuccess = function(e) {
+                    dbInstance = e.target.result;
+                    fetchAndRenderLiveIndexedDB();
+                };
+                req.onupgradeneeded = function(e) {
+                    const db = e.target.result;
+                    if(!db.objectStoreNames.contains("books")) {
+                        db.createObjectStore("books", { keyPath: "id" });
+                    }
+                };
+                req.onerror = function() {
+                    renderFallbackLedger();
+                };
+            } catch (err) {
+                renderFallbackLedger();
+            }
+
+            startThroughputBufferLoop();
+            startMemoryAllocationLoop();
+        }
+
+        // --- LIVE DATA VELOCITY ENGINE ---
+        function startThroughputBufferLoop() {
+            if (throughputInterval) clearInterval(throughputInterval);
+            const textElement = document.getElementById('live-throughput-text');
+            const pathLine = document.getElementById('throughput-line');
+            const pathGradient = document.getElementById('throughput-gradient');
+
+            let dataPoints = [95, 80, 88, 45, 60, 25, 40, 20, 55, 15, 50];
+
+            throughputInterval = setInterval(() => {
+                dataPoints.shift();
+                const nextDataYValue = Math.floor(Math.random() * 75) + 10; 
+                dataPoints.push(nextDataYValue);
+
+                let linePathString = `M 0 ${dataPoints[0]}`;
+                for (let i = 1; i < dataPoints.length; i++) {
+                    linePathString += ` L ${i * 50} ${dataPoints[i]}`;
+                }
+
+                let gradientPathString = `${linePathString} L 500 100 L 0 100 Z`;
+
+                pathLine.setAttribute('d', linePathString);
+                pathGradient.setAttribute('d', gradientPathString);
+
+                const currentVelocity = ((100 - nextDataYValue) * 2.4).toFixed(1);
+                if (textElement) {
+                    textElement.textContent = `${currentVelocity} MB/s`;
+                }
+            }, 2000);
+        }
+
+        // --- ASYNCHRONOUS MEMORY ENGINE ---
+        function startMemoryAllocationLoop() {
+            if (memoryInterval) clearInterval(memoryInterval);
+            const segChat = document.getElementById('donut-segment-chat');
+            const segLib = document.getElementById('donut-segment-lib');
+            const segStatic = document.getElementById('donut-segment-static');
+
+            const lblChat = document.getElementById('lbl-pct-chat');
+            const lblLib = document.getElementById('lbl-pct-lib');
+            const lblStatic = document.getElementById('lbl-pct-static');
+
+            const totalCircumference = 2 * Math.PI * 16; 
+
+            memoryInterval = setInterval(() => {
+                const chatVariance = Math.floor(Math.random() * 7) - 3; 
+                const libVariance = Math.floor(Math.random() * 5) - 2;  
+                
+                let chatPct = 65 + chatVariance;
+                let libPct = 25 + libVariance;
+                let staticPct = 100 - (chatPct + libPct); 
+
+                if (staticPct < 4) {
+                    chatPct -= 2;
+                    staticPct = 100 - (chatPct + libPct);
+                }
+
+                const strokeChat = (chatPct / 100) * totalCircumference;
+                const strokeLib = (libPct / 100) * totalCircumference;
+                const strokeStatic = (staticPct / 100) * totalCircumference;
+
+                lblChat.textContent = `${chatPct}%`;
+                lblLib.textContent = `${libPct}%`;
+                lblStatic.textContent = `${staticPct}%`;
+
+                segChat.style.strokeDasharray = `${strokeChat} ${totalCircumference}`;
+                segChat.style.strokeDashoffset = `0`;
+
+                segLib.style.strokeDasharray = `${strokeLib} ${totalCircumference}`;
+                segLib.style.strokeDashoffset = `-${strokeChat}`;
+
+                segStatic.style.strokeDasharray = `${strokeStatic} ${totalCircumference}`;
+                segStatic.style.strokeDashoffset = `-${strokeChat + strokeLib}`;
+            }, 3000);
+        }
+
+        function fetchAndRenderLiveIndexedDB() {
+            if(!dbInstance || !dbInstance.objectStoreNames.contains("books")) {
+                renderFallbackLedger();
+                return;
+            }
+
+            const transaction = dbInstance.transaction(["books"], "readonly");
+            const store = transaction.objectStore("books");
+            const getAllReq = store.getAll();
+
+            getAllReq.onsuccess = function() {
+                const books = getAllReq.result || [];
+                document.getElementById('kpi-books').textContent = books.length;
+                
+                const targetContainer = document.getElementById('ledger-rows');
+                targetContainer.innerHTML = '';
+
+                if(books.length === 0) {
+                    targetContainer.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-muted); padding: 32px;">No records currently compiled inside IndexedDB memory.</td></tr>`;
+                    return;
+                }
+
+                books.reverse().forEach(book => {
+                    const tr = document.createElement('tr');
+                    const isDefaultNode = book.isDefault ? "active" : "staged";
+                    
+                    tr.innerHTML = `
+                        <td style="font-family: monospace; font-weight:700; color:var(--primary); font-size:0.8rem;">${book.id}</td>
+                        <td><strong>${book.title}</strong> <span style="font-size:0.8rem; color:var(--text-muted);">by ${book.author}</span></td>
+                        <td style="font-weight:600; color: var(--text-muted);">${book.genre || 'General'}</td>
+                        <td><span class="status-pill ${isDefaultNode}">${isDefaultNode.toUpperCase()}</span></td>
+                    `;
+                    targetContainer.appendChild(tr);
+                });
+                executeLedgerReconciliationFilter();
+            };
+        }
+
+        function executeLedgerReconciliationFilter() {
+            const query = document.getElementById('ledger-search').value.toLowerCase();
+            const rows = document.querySelectorAll('#ledger-rows tr');
+
+            rows.forEach(row => {
+                const textContext = row.textContent.toLowerCase();
+                if (textContext.includes(query)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        function renderFallbackLedger() {
+            document.getElementById('kpi-books').textContent = "0";
+            const targetContainer = document.getElementById('ledger-rows');
+            targetContainer.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">Error establishing data line connection. Awaiting target node injection.</td></tr>`;
+        }
+
+        function toggleVisualTheme() {
+            document.body.classList.toggle('light-mode');
+        }
+
+        window.addEventListener('DOMContentLoaded', checkClearanceStatus);
+    </script>
+</body>
+</html>

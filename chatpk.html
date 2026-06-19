@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>CHAT PK PRO</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#8d73ee">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --primary: #8d73ee; 
+            --primary-hover: #7457df;
+            --bg-body: #f3f4f6; 
+            --bg-card: #ffffff;
+            --text-main: #1f2937; 
+            --text-muted: #6b7280;
+            --chat-bg: #f9fafb; 
+            --bot-msg: #f3f4f6;
+            --border: #e5e7eb; 
+            --error: #ef4444; 
+            --success: #10b981;
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.04);
+            --shadow-md: 0 10px 30px rgba(141, 115, 238, 0.06);
+            --shadow-lg: 0 20px 50px rgba(0,0,0,0.08);
+            --radius-lg: 16px;
+            --radius-md: 12px;
+            --radius-sm: 8px;
+        }
+        body.dark-mode {
+            --bg-body: #0b0b0f; 
+            --bg-card: #13131a; 
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --chat-bg: #0d0d12; 
+            --bot-msg: #1c1c26; 
+            --border: #22222f;
+            --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+            font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+            transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+        }
+        body { 
+            background: var(--bg-body); 
+            color: var(--text-main); 
+            height: 100vh; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            overflow: hidden; 
+        }
+        #offline-notice { 
+            display: none; 
+            background: var(--error); 
+            color: white; 
+            text-align: center; 
+            padding: 10px; 
+            font-size: 0.85rem; 
+            font-weight: 600; 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            right: 0; 
+            z-index: 5000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        /* --- AUTH TERMINAL LAYER --- */
+        #auth-page { 
+            position: fixed; 
+            inset: 0; 
+            background: radial-gradient(circle at top right, #a29bfe, var(--primary)); 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            z-index: 3000; 
+            transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1); 
+        }
+        .auth-card { 
+            background: var(--bg-card); 
+            padding: 40px 35px; 
+            border-radius: 28px; 
+            width: 360px; 
+            box-shadow: var(--shadow-lg); 
+            text-align: center; 
+        }
+        .tabs { 
+            display: flex; 
+            margin-bottom: 25px; 
+            background: var(--chat-bg);
+            padding: 4px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+        }
+        .tab { 
+            flex: 1; 
+            padding: 10px; 
+            cursor: pointer; 
+            color: var(--text-muted); 
+            font-weight: 600; 
+            font-size: 0.9rem;
+            border-radius: var(--radius-sm);
+            transition: all 0.2s ease;
+        }
+        .tab.active { 
+            color: var(--primary); 
+            background: var(--bg-card);
+            box-shadow: var(--shadow-sm);
+        }
+        .input-box { 
+            margin-bottom: 18px; 
+            text-align: left; 
+        }
+        .input-box label { 
+            font-size: 0.75rem; 
+            font-weight: 700; 
+            margin-bottom: 6px; 
+            display: block; 
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .input-box input { 
+            width: 100%; 
+            padding: 14px 16px; 
+            border: 1px solid var(--border); 
+            border-radius: var(--radius-md); 
+            box-sizing: border-box; 
+            background: var(--chat-bg); 
+            color: var(--text-main); 
+            outline: none; 
+            font-size: 0.95rem;
+        }
+        .input-box input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(141, 115, 238, 0.15);
+        }
+        .auth-btn { 
+            background: var(--primary); 
+            color: white; 
+            border: none; 
+            width: 100%; 
+            padding: 14px; 
+            border-radius: var(--radius-md); 
+            cursor: pointer; 
+            font-weight: 600; 
+            font-size: 0.95rem;
+            box-shadow: 0 4px 12px rgba(141, 115, 238, 0.25);
+        }
+        .auth-btn:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+        .auth-card a {
+            display: inline-block;
+            margin-top: 20px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .auth-card a:hover { color: var(--primary); }
+
+        /* --- CORE SYSTEM WORKSPACE INTERFACE --- */
+        #chat-container { 
+            display: none; 
+            width: 100vw; 
+            height: 100vh; 
+            background: var(--bg-card); 
+            flex-direction: row; 
+        }
+        #sidebar { 
+            width: 280px; 
+            background: var(--bg-card); 
+            border-right: 1px solid var(--border); 
+            display: flex; 
+            flex-direction: column; 
+            padding: 20px 15px; 
+        }
+        #main-chat { 
+            flex: 1; 
+            display: flex; 
+            flex-direction: column; 
+            position: relative; 
+            background: var(--chat-bg);
+        }
+        .new-chat-btn { 
+            background: rgba(141, 115, 238, 0.08); 
+            color: var(--primary); 
+            border: 1px dashed var(--primary); 
+            padding: 14px; 
+            border-radius: var(--radius-md); 
+            cursor: pointer; 
+            font-weight: 600; 
+            margin-bottom: 20px; 
+            font-size: 0.9rem;
+        }
+        .new-chat-btn:hover {
+            background: var(--primary);
+            color: white;
+            border-style: solid;
+            box-shadow: 0 4px 12px rgba(141, 115, 238, 0.15);
+        }
+        #thread-list { 
+            flex: 1; 
+            overflow-y: auto; 
+        }
+        .thread-item { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 12px 14px; 
+            border-radius: var(--radius-md); 
+            cursor: pointer; 
+            margin-bottom: 6px; 
+            font-size: 0.9rem; 
+            color: var(--text-muted); 
+            font-weight: 500;
+        }
+        .thread-item:hover {
+            background: var(--bot-msg);
+            color: var(--text-main);
+        }
+        .thread-item.active { 
+            background: rgba(141, 115, 238, 0.1); 
+            color: var(--primary); 
+            font-weight: 600; 
+        }
+        .delete-thread-btn { 
+            color: var(--text-muted); 
+            font-size: 1.1rem; 
+            cursor: pointer; 
+            opacity: 0.5;
+            padding: 0 4px;
+        }
+        .delete-thread-btn:hover { opacity: 1; color: var(--error); }
+
+        /* --- TRANSACTION WINDOW & HEADERS --- */
+        #chat-header { 
+            background: var(--bg-card); 
+            color: var(--text-main); 
+            padding: 15px 25px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            border-bottom: 1px solid var(--border);
+            height: 70px;
+            padding-top: calc(15px + env(safe-area-inset-top)); 
+        }
+        #thread-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        #chat-window { 
+            flex: 1; 
+            overflow-y: auto; 
+            padding: 30px 25px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 20px; 
+            background: var(--chat-bg); 
+        }
+        .msg { 
+            max-width: 70%; 
+            padding: 14px 20px; 
+            border-radius: var(--radius-lg); 
+            font-size: 0.95rem; 
+            line-height: 1.55; 
+            word-wrap: break-word; 
+            position: relative; 
+            box-shadow: var(--shadow-sm);
+            animation: fadeIn 0.3s ease forwards;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .bot { 
+            background: var(--bot-msg); 
+            color: var(--text-main);
+            align-self: flex-start; 
+            border-bottom-left-radius: 4px; 
+            padding-bottom: 42px; 
+        }
+        .user { 
+            background: var(--primary); 
+            color: white; 
+            align-self: flex-end; 
+            border-bottom-right-radius: 4px; 
+            box-shadow: 0 4px 15px rgba(141, 115, 238, 0.2);
+        }
+        .copy-btn { 
+            position: absolute; 
+            bottom: 10px; 
+            right: 14px; 
+            font-size: 0.72rem; 
+            background: var(--bg-card); 
+            border: 1px solid var(--border); 
+            padding: 4px 10px; 
+            border-radius: var(--radius-sm); 
+            cursor: pointer; 
+            color: var(--text-muted); 
+            font-weight: 500;
+        }
+        .copy-btn:hover { 
+            border-color: var(--primary); 
+            color: var(--primary); 
+        }
+        
+        .typing { 
+            display: flex; 
+            align-items: center;
+            gap: 5px; 
+            padding: 18px 24px; 
+            width: fit-content;
+        }
+        .dot { 
+            width: 7px; 
+            height: 7px; 
+            background: var(--text-muted); 
+            border-radius: 50%; 
+            animation: bounce 1.4s infinite ease-in-out both; 
+        }
+        .dot:nth-child(1) { animation-delay: -0.32s; }
+        .dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+
+        /* --- CONTROL INPUT BOARD --- */
+        .input-area { 
+            display: flex; 
+            align-items: center; 
+            padding: 20px 25px; 
+            gap: 12px; 
+            background: var(--bg-card);
+            border-top: 1px solid var(--border); 
+            padding-bottom: calc(20px + env(safe-area-inset-bottom)); 
+        }
+        #user-input { 
+            flex: 1; 
+            border: 1px solid var(--border); 
+            padding: 14px 22px; 
+            border-radius: 30px; 
+            outline: none; 
+            background: var(--chat-bg); 
+            color: var(--text-main); 
+            font-size: 0.95rem;
+        }
+        #user-input:focus {
+            border-color: var(--primary);
+            background: var(--bg-card);
+            box-shadow: 0 0 0 3px rgba(141, 115, 238, 0.12);
+        }
+        .icon-btn { 
+            background: var(--chat-bg); 
+            border: 1px solid var(--border); 
+            font-size: 1.15rem; 
+            cursor: pointer; 
+            color: var(--text-muted); 
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .icon-btn:hover {
+            color: var(--text-main);
+            border-color: var(--text-muted);
+        }
+        .icon-btn.active { 
+            color: white; 
+            background: var(--error);
+            border-color: var(--error);
+            animation: pulseRed 1.5s infinite; 
+        }
+        @keyframes pulseRed { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 70% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
+
+        /* --- WORKSPACE MODULE CONSOLES --- */
+        #profile-modal { 
+            position: absolute; 
+            top: 75px; 
+            right: 25px; 
+            width: 240px; 
+            background: var(--bg-card); 
+            border-radius: var(--radius-lg); 
+            box-shadow: var(--shadow-lg); 
+            display: none; 
+            flex-direction: column; 
+            padding: 20px 16px; 
+            z-index: 200; 
+            border: 1px solid var(--border); 
+        }
+        .menu-btn { 
+            width: 100%; 
+            padding: 11px 14px; 
+            border-radius: var(--radius-md); 
+            border: 1px solid transparent; 
+            cursor: pointer; 
+            margin-bottom: 6px; 
+            background: transparent; 
+            color: var(--text-main); 
+            font-size: 0.88rem; 
+            font-weight: 500;
+            text-align: left; 
+        }
+        .menu-btn:hover { 
+            background: var(--chat-bg); 
+            border-color: var(--border);
+        }
+        #settings-overlay { 
+            display:none; 
+            position:fixed; 
+            inset:0; 
+            background:rgba(0,0,0,0.4); 
+            backdrop-filter: blur(4px);
+            z-index:4000; 
+            justify-content:center; 
+            align-items:center; 
+        }
+
+        @media (max-width: 768px) {
+            #sidebar { display: none; }
+            .msg { max-width: 85%; }
+            #chat-window { padding: 20px 15px; }
+            .input-area { padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="offline-notice">⚠️ Offline: Search Disabled</div>
+
+<div id="auth-page">
+    <div class="auth-card">
+        <h2 style="color: white; margin-bottom: 25px; font-weight: 800; letter-spacing: -0.03em;">CHAT PK PRO</h2>
+        <div class="tabs">
+            <div id="login-tab" class="tab active" onclick="switchTab('login')">Login</div>
+            <div id="signup-tab" class="tab" onclick="switchTab('signup')">Sign Up</div>
+        </div>
+        <div class="input-box"><input type="text" id="auth-user" placeholder="Username"></div>
+        <div class="input-box"><input type="password" id="auth-pass" placeholder="Password"></div>
+        <button class="auth-btn" id="main-btn" onclick="handleAuth()">Login</button>
+        <button class="auth-btn" id="pwa-install-btn" style="display: none; background: #22222f; margin-top: 12px; box-shadow: none;">📲 Install App</button>
+        <p id="msg-box" style="font-size: 0.85rem; margin-top: 12px; display: none; font-weight: 600;"></p>
+        <a href="index.html">Back to home page</a>
+    </div>
+</div>
+
+<div id="chat-container">
+    <div id="sidebar">
+        <button class="new-chat-btn" onclick="createNewThread()">+ New Chat</button>
+        <div id="thread-list"></div>
+    </div>
+    <div id="main-chat">
+        <div id="chat-header">
+            <span id="thread-title">My Chats</span>
+            <div id="profile-chip" style="display:flex; align-items:center; gap:10px; cursor:pointer; background: var(--bot-msg); padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border);" onclick="toggleModal()">
+                <img id="chip-img" style="width:26px; height:26px; border-radius:50%; object-fit:cover;" src="https://cdn-icons-png.flaticon.com/512/149/149071.png">
+                <span id="chip-user" style="font-size: 0.85rem; font-weight: 600;">User</span>
+            </div>
+        </div>
+        <div id="chat-window"></div>
+        <div class="input-area">
+            <button id="voice-btn" class="icon-btn" onclick="startVoice()">🎤</button>
+            <input type="text" id="user-input" placeholder="Type a message...">
+            <button id="send-btn" class="auth-btn" style="width:auto; padding:0 24px; height:45px; border-radius:25px;" onclick="handleSearch()">Send</button>
+        </div>
+    </div>
+
+    <div id="profile-modal">
+        <div style="position:relative; width:72px; height:72px; margin: 5px auto 12px;">
+            <img id="modal-img" style="width:100%; height:100%; border-radius:50%; object-fit:cover; border:2px solid var(--primary);" src="https://cdn-icons-png.flaticon.com/512/149/149071.png">
+            <div onclick="document.getElementById('pfp-input').click()" style="position:absolute; bottom:0; right:0; background:var(--primary); color:white; width:22px; height:22px; border-radius:50%; cursor:pointer; font-size:11px; display:flex; justify-content:center; align-items:center; box-shadow: 0 2px 6px rgba(0,0,0,0.15);">📷</div>
+            <input type="file" id="pfp-input" hidden accept="image/*" onchange="uploadPFP(this)">
+        </div>
+        <button id="remove-pfp" class="menu-btn" style="color:var(--error); text-align:center; display:none; font-weight:600;" onclick="removePFP()">Remove Photo</button>
+        <div id="modal-username" style="font-weight:700; text-align:center; margin-bottom:15px; font-size:1rem;">User</div>
+        <button class="menu-btn" onclick="openSettings()">⚙️ Settings</button>
+        <button class="menu-btn" onclick="toggleDarkMode()">🌙 Theme</button>
+        <button class="menu-btn" style="color: var(--error);" onclick="location.reload()">Logout</button>
+    </div>
+</div>
+
+<div id="settings-overlay">
+    <div class="auth-card" style="text-align: left; width: 340px;">
+        <h3 style="margin-top:0; color:var(--primary); font-weight: 700; margin-bottom: 20px; font-size: 1.15rem;">Settings</h3>
+        <div class="input-box"><label>Display Name</label><input type="text" id="set-name"></div>
+        <div class="input-box"><label>Accent Color</label><input type="color" id="set-color" style="height:44px; padding:4px; cursor:pointer;"></div>
+        <button class="auth-btn" style="background: var(--error); margin-bottom: 5px; box-shadow: none;" onclick="resetAppData()">🚨 Reset All Data</button>
+        <div style="display:flex; gap:10px; margin-top:20px;">
+            <button class="auth-btn" onclick="saveSettings()">Save</button>
+            <button class="auth-btn" style="background:#6b7280; box-shadow: none;" onclick="closeSettings()">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentUser = ""; let currentThreadId = null; let mode = 'login'; let deferredPrompt;
+    const chatWin = document.getElementById('chat-window');
+    const userInp = document.getElementById('user-input');
+    const installBtn = document.getElementById('pwa-install-btn');
+
+    /* --- HELPERS --- */
+    function getTimeGreeting() {
+        const hour = new Date().getHours();
+        if (hour < 12) return "Good Morning";
+        if (hour < 17) return "Good Afternoon";
+        return "Good Evening";
+    }
+
+    /* --- AUTH & SYSTEM --- */
+    function switchTab(t) {
+        mode = t;
+        document.getElementById('login-tab').className = t === 'login' ? 'tab active' : 'tab';
+        document.getElementById('signup-tab').className = t === 'signup' ? 'tab active' : 'tab';
+        document.getElementById('main-btn').innerText = t === 'login' ? 'Login' : 'Sign Up';
+    }
+
+    function showMsg(text, color) {
+        const box = document.getElementById('msg-box');
+        box.innerText = text; box.style.color = color; box.style.display = 'block';
+        setTimeout(() => box.style.display = 'none', 3000);
+    }
+
+    function handleAuth() {
+        const u = document.getElementById('auth-user').value.trim();
+        const p = document.getElementById('auth-pass').value.trim();
+        if(!u || !p) return;
+        if(mode === 'signup') {
+            localStorage.setItem(`pwd_${u}`, p);
+            showMsg("Account Created!", "var(--success)");
+        } else {
+            if(localStorage.getItem(`pwd_${u}`) === p) { currentUser = u; enterApp(); }
+            else { showMsg("Error", "var(--error)"); }
+        }
+    }
+
+    function enterApp() {
+        const dName = localStorage.getItem(`display_${currentUser}`) || currentUser;
+        const clr = localStorage.getItem(`color_${currentUser}`) || '#8d73ee';
+        
+        document.getElementById('chip-user').innerText = `${getTimeGreeting()}, ${dName}`;
+        document.getElementById('modal-username').innerText = dName;
+        document.documentElement.style.setProperty('--primary', clr);
+        
+        loadPFP(); loadThreads();
+        const threads = JSON.parse(localStorage.getItem(`threads_${currentUser}`) || "[]");
+        if(threads.length > 0) switchThread(threads[0].id); else createNewThread();
+        
+        document.getElementById('auth-page').style.transform = "translateY(-100%)";
+        setTimeout(() => { document.getElementById('chat-container').style.display = "flex"; }, 500);
+    }
+
+    function resetAppData() {
+        if (confirm("🚨 DELETE EVERYTHING?\nAll accounts and chats will be lost forever.")) {
+            localStorage.clear(); location.reload();
+        }
+    }
+
+    /* --- UI & MEDIA --- */
+    function uploadPFP(input) {
+        if(input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = (e) => { localStorage.setItem(`pfp_${currentUser}`, e.target.result); loadPFP(); };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+    function removePFP() { localStorage.removeItem(`pfp_${currentUser}`); loadPFP(); }
+    function loadPFP() {
+        const p = localStorage.getItem(`pfp_${currentUser}`) || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+        document.getElementById('modal-img').src = p; document.getElementById('chip-img').src = p;
+        document.getElementById('remove-pfp').style.display = localStorage.getItem(`pfp_${currentUser}`) ? "block" : "none";
+    }
+    function toggleDarkMode() { document.body.classList.toggle('dark-mode'); }
+    function toggleModal() { const m = document.getElementById('profile-modal'); m.style.display = m.style.display==='flex'?'none':'flex'; }
+    function openSettings() { toggleModal(); document.getElementById('settings-overlay').style.display='flex'; }
+    function closeSettings() { document.getElementById('settings-overlay').style.display='none'; }
+    function saveSettings() {
+        localStorage.setItem(`display_${currentUser}`, document.getElementById('set-name').value);
+        localStorage.setItem(`color_${currentUser}`, document.getElementById('set-color').value);
+        location.reload();
+    }
+
+    /* --- THREADS --- */
+    function createNewThread() {
+        const id = 't_' + Date.now();
+        const threads = JSON.parse(localStorage.getItem(`threads_${currentUser}`) || "[]");
+        threads.unshift({ id, title: "New Conversation" });
+        localStorage.setItem(`threads_${currentUser}`, JSON.stringify(threads));
+        switchThread(id);
+        
+        const welcome = `${getTimeGreeting()}! I am CHAT PK PRO. How can I assist you today?`;
+        addMsg(welcome, 'bot'); 
+    }
+    function loadThreads() {
+        const list = document.getElementById('thread-list'); list.innerHTML = '';
+        const threads = JSON.parse(localStorage.getItem(`threads_${currentUser}`) || "[]");
+        threads.forEach(t => {
+            const div = document.createElement('div');
+            div.className = `thread-item ${t.id === currentThreadId ? 'active' : ''}`;
+            div.innerHTML = `<span style="flex:1" onclick="switchThread('${t.id}')">${t.title}</span><span class="delete-thread-btn" onclick="delThread('${t.id}')">&times;</span>`;
+            list.appendChild(div);
+        });
+    }
+    function switchThread(id) {
+        currentThreadId = id; loadThreads(); loadHistory();
+        const threads = JSON.parse(localStorage.getItem(`threads_${currentUser}`) || "[]");
+        const found = threads.find(x=>x.id===id);
+        if(found) document.getElementById('thread-title').innerText = found.title;
+    }
+    function updateThreadTitle(q) {
+        let threads = JSON.parse(localStorage.getItem(`threads_${currentUser}`) || "[]");
+        const idx = threads.findIndex(t => t.id === currentThreadId);
+        if (idx !== -1 && threads[idx].title === "New Conversation") {
+            threads[idx].title = q.substring(0, 20) + (q.length > 20 ? "..." : "");
+            localStorage.setItem(`threads_${currentUser}`, JSON.stringify(threads));
+            loadThreads();
+        }
+    }
+    function delThread(id) {
+        let threads = JSON.parse(localStorage.getItem(`threads_${currentUser}`) || "[]");
+        threads = threads.filter(x => x.id !== id);
+        localStorage.setItem(`threads_${currentUser}`, JSON.stringify(threads));
+        localStorage.removeItem(`chat_${currentUser}_${id}`);
+        if(currentThreadId === id) { currentThreadId = null; chatWin.innerHTML = ''; }
+        loadThreads();
+    }
+
+    /* --- CHAT ENGINE --- */
+    function getQuickResponse(text) {
+        const input = text.toLowerCase().trim();
+        const greetings = ['hello', 'hi', 'hy', 'hey', 'morning', 'evening', 'mwaramutse'];
+        if (greetings.some(g => input === g || input.startsWith(g + ' '))) return "Hello! I'm ready to help.";
+        if (input.includes('thank') || input.includes('murakoze')) return "You're very welcome!";
+        return null; 
+    }
+
+    function getDuckDuckGoAnswer(query) {
+        return new Promise((resolve) => {
+            const callbackName = 'ddg_callback_' + Math.floor(Math.random() * 100000);
+            const script = document.createElement('script');
+            window[callbackName] = function(data) {
+                delete window[callbackName]; document.body.removeChild(script);
+                if (data.AbstractText) resolve(data.AbstractText);
+                else if (data.Definition) resolve(data.Definition);
+                else if (data.RelatedTopics && data.RelatedTopics.length > 0) resolve(data.RelatedTopics[0].Text);
+                else resolve("I couldn't find a direct answer. Try a different question!");
+            };
+            script.src = `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&callback=${callbackName}`;
+            document.body.appendChild(script);
+        });
+    }
+
+    async function handleSearch() {
+        const q = userInp.value.trim(); if(!q || !currentThreadId) return;
+        addMsg(q, 'user'); userInp.value = '';
+
+        const quick = getQuickResponse(q);
+        if (quick) { addMsg(quick, 'bot'); updateThreadTitle(q); return; }
+
+        const loader = document.createElement('div'); loader.className = 'msg bot typing'; loader.id = 'loader';
+        loader.innerHTML = '<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
+        chatWin.appendChild(loader); chatWin.scrollTop = chatWin.scrollHeight;
+
+        try {
+            const answer = await getDuckDuckGoAnswer(q);
+            if(document.getElementById('loader')) document.getElementById('loader').remove();
+            addMsg(answer, 'bot'); updateThreadTitle(q);
+        } catch { 
+            if(document.getElementById('loader')) document.getElementById('loader').remove();
+            addMsg("Connection error.", "bot"); 
+        }
+    }
+
+    function addMsg(t, s, hist = false) {
+        const d = document.createElement('div'); d.className = `msg ${s}`; 
+        if(s === 'bot') d.innerHTML = `<span>${t}</span><button class="copy-btn" onclick="copyText(this)">📋 Copy</button>`;
+        else d.innerHTML = t;
+        chatWin.appendChild(d); chatWin.scrollTop = chatWin.scrollHeight;
+        if(!hist) {
+            const h = JSON.parse(localStorage.getItem(`chat_${currentUser}_${currentThreadId}`) || "[]");
+            h.push({t, s}); localStorage.setItem(`chat_${currentUser}_${currentThreadId}`, JSON.stringify(h));
+        }
+    }
+
+    function copyText(btn) {
+        const text = btn.parentElement.querySelector('span').innerText;
+        navigator.clipboard.writeText(text).then(() => {
+            btn.innerText = "✅ Done!"; setTimeout(() => btn.innerText = "📋 Copy", 2000);
+        });
+    }
+
+    function loadHistory() {
+        chatWin.innerHTML = ''; if(!currentThreadId) return;
+        const h = JSON.parse(localStorage.getItem(`chat_${currentUser}_${currentThreadId}`) || "[]");
+        h.forEach(m => addMsg(m.t, m.s, true));
+    }
+
+    function startVoice() {
+        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if(!SR) return; const rec = new SR();
+        rec.onstart = () => document.getElementById('voice-btn').classList.add('active');
+        rec.onend = () => document.getElementById('voice-btn').classList.remove('active');
+        rec.onresult = (e) => { userInp.value = e.results[0][0].transcript; handleSearch(); };
+        rec.start();
+    }
+
+    /* --- PWA LOGIC --- */
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault(); deferredPrompt = e; installBtn.style.display = 'block';
+        installBtn.onclick = () => {
+            installBtn.style.display = 'none'; deferredPrompt.prompt();
+            deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
+        };
+    });
+
+    userInp.addEventListener("keypress", (e) => { if (e.key === "Enter") handleSearch(); });
+    if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js'); }); }
+</script>
+</body>
+</html>
